@@ -1,0 +1,40 @@
+{
+  "name": "tillprochaska/kirby-test-utils",
+  "description": "Test Kirby 3 websites with Pest.",
+  "license": "MIT",
+  "require-dev": {
+    "getkirby/cms": "3.6.1.1",
+    "friendsofphp/php-cs-fixer": "^3.3",
+    "psy/psysh": "@stable"
+  },
+  "authors": [
+    {
+      "name": "Till Prochaska",
+      "email": "mail@tillprochaska.de"
+    }
+  ],
+  "scripts": {
+    "test": "pest --coverage",
+    "cs": "php-cs-fixer fix --dry-run --config=.php-cs -- src/ tests/",
+    "cs:fix": "php-cs-fixer fix --config=.php-cs -- src/ tests/"
+  },
+  "autoload": {
+    "files": ["src/Pest.php"],
+    "psr-4": {
+      "TillProchaska\\KirbyTestUtils\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "exclude-from-classmap": ["tests/support"],
+    "psr-4": {
+      "TillProchaska\\KirbyTestUtils\\Tests\\": "tests/"
+    }
+  },
+  "extra": {
+    "kirby-cms-path": false
+  },
+  "require": {
+    "pestphp/pest": "^1.21",
+    "symfony/css-selector": "^6.0"
+  }
+}
