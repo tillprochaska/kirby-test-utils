@@ -87,7 +87,7 @@ it('fails if response does not contain selector', function () {
     $this->mock->assertSelector('h2');
 })->throws(
     exception: AssertionFailedError::class,
-    exceptionMessage: 'Expected to find at least one matching element, but did not find any.',
+    exceptionMessage: 'has at least one matching element.',
 );
 
 it('passes if response contains exact number of elements matching selector', function () {
@@ -104,7 +104,7 @@ it('fails if response does not contain exact number of elements matching selecto
     $this->mock->assertSelector('li', count: 2);
 })->throws(
     exception: AssertionFailedError::class,
-    exceptionMessage: 'Expected to find exactly 2 matching elements, but found 3.',
+    exceptionMessage: 'has exactly 2 matching elements.',
 );
 
 it('passes if response contains selector with text', function () {
@@ -117,7 +117,7 @@ it('fails if response does not contains selector with text', function () {
     $this->mock->assertSelector('h1', text: 'Hello World!');
 })->throws(
     exception: AssertionFailedError::class,
-    exceptionMessage: 'Expected to find at least one matching element, but did not find any.',
+    exceptionMessage: 'has at least one matching element.',
 );
 
 it('passes if response contains exact number of elements matching selector with text', function () {
@@ -134,5 +134,5 @@ it('fails if response does not contain exact number of elements matching selecto
     $this->mock->assertSelector('li', count: 3, text: 'One');
 })->throws(
     exception: AssertionFailedError::class,
-    exceptionMessage: 'Expected to find exactly 3 matching elements, but found 1.',
+    exceptionMessage: 'has exactly 3 matching elements.',
 );

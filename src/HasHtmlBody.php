@@ -66,24 +66,9 @@ trait HasHtmlBody
 
     public function assertSelector(string $selector, ?int $count = null, ?string $text = null, ?array $attributes = null): self
     {
-        $elements = $this->select($selector, $text, $attributes);
-        $actualCount = $elements->count();
+        $constraint = new HasSelector($selector, $count, $text, $attributes);
 
-        if (null !== $count) {
-            if ($count !== $actualCount) {
-                Assert::fail("Expected to find exactly {$count} matching elements, but found {$actualCount}.");
-            }
-
-            Assert::assertTrue(true);
-
-            return $this;
-        }
-
-        if ($actualCount <= 0) {
-            Assert::fail('Expected to find at least one matching element, but did not find any.');
-        }
-
-        Assert::assertTrue(true);
+        Assert::assertThat($this, $constraint);
 
         return $this;
     }
