@@ -26,6 +26,14 @@ it('can select HTML elements matching CSS selectors with given text', function (
     expect($result->first()->getAttribute('href'))->toEqual('/sign-up');
 });
 
+it('trims leading and trailing whitespace when selecting text', function () {
+    $this->mock->method('body')->willReturn('<a href="https://example.org">  Example  </a>');
+    $result = $this->mock->select('a', text: 'Example');
+
+    expect($result)->toHaveCount(1);
+    expect($result->first()->getAttribute('href'))->toEqual('https://example.org');
+});
+
 it('can select HTML elements matching CSS selectors with given attributes', function () {
     $this->mock->method('body')->willReturn('
         <meta name="description" content="Default description" />

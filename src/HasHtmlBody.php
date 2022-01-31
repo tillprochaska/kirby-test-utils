@@ -28,7 +28,7 @@ trait HasHtmlBody
         $elements = new Collection([...$elements]);
 
         if (null !== $text) {
-            $elements = $elements->filter(fn ($element) => $element->textContent === $text);
+            $elements = $elements->filter(fn ($element) => trim($element->textContent) === trim($text));
         }
 
         if (null !== $attributes) {
