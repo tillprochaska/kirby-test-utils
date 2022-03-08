@@ -137,17 +137,11 @@ it('flushes test emails before every test case', function () {
         'body' => 'Body',
     ];
 
-    $testCase = new TestTestCase();
-    $testCase->setUp();
-
-    expect(TestEmail::emails())->toHaveCount(0);
-    $testCase->kirby()->email($props);
+    $this->testCase->kirby()->email($props);
     expect(TestEmail::emails())->toHaveCount(1);
 
-    $testCase = new TestTestCase();
-    $testCase->setUp();
+    $this->testCase->setUp();
 
-    expect(TestEmail::emails())->toHaveCount(0);
-    $testCase->kirby()->email($props);
+    $this->testCase->kirby()->email($props);
     expect(TestEmail::emails())->toHaveCount(1);
 });

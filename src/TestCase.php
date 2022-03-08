@@ -14,24 +14,14 @@ use PHPUnit\Framework\TestCase as BaseTestCase;
  */
 class TestCase extends BaseTestCase
 {
-    protected Kirby $kirby;
+    protected ?Kirby $kirby;
     protected array $defaultQuery = [];
     protected array $defaultParams = [];
     protected array $defaultHeaders = [];
 
     protected function setUp(): void
     {
-        $this->kirby = $this->initializeKirbyInstance();
-
-        $this->kirby->extend([
-            'components' => [
-                'email' => function ($kirby, $props, $debug) {
-                    return new TestEmail($props);
-                },
-            ],
-        ]);
-
-        TestEmail::flushEmails();
+        $this->kirby = null;
     }
 
     public function request(string $method, string $path, array $query = [], array $params = [], array $headers = []): Response
@@ -54,7 +44,7 @@ class TestCase extends BaseTestCase
         // use the test request. The cloned Kirby instance will
         // also be returned whenever the Kirby singleton is
         // accessed (e.g. in the `kirby()` helper).
-        $kirby = kirby();
+        $kirby = $this->kirby();
 
         $requestProps = [
             'method' => $method,
@@ -124,6 +114,20 @@ class TestCase extends BaseTestCase
 
     public function kirby(): Kirby
     {
+        if (null === $this->kirby) {
+            $this->kirby = $this->initializeKirbyInstance();
+
+            $this->kirby->extend([
+                'components' => [
+                    'email' => function ($kirby, $props, $debug) {
+                        return new TestEmail($props);
+                    },
+                ],
+            ]);
+
+            TestEmail::flushEmails();
+        }
+
         return $this->kirby;
     }
 
