@@ -115,25 +115,41 @@ class TestCase extends BaseTestCase
     public function kirby(): Kirby
     {
         if (null === $this->kirby) {
-            $this->kirby = $this->initializeKirbyInstance();
-
-            $this->kirby->extend([
-                'components' => [
-                    'email' => function ($kirby, $props, $debug) {
-                        return new TestEmail($props);
-                    },
-                ],
-            ]);
-
-            TestEmail::flushEmails();
+            $this->beforeKirbyInit();
+            $this->initKirby();
+            $this->afterKirbyInit();
         }
 
         return $this->kirby;
     }
 
-    protected function initializeKirbyInstance(): Kirby
+    protected function beforeKirbyInit(): void
     {
-        throw new \Exception('You need to override the `initKirby` method in your `TestCase`. See the README for additional instructions.');
+    }
+
+    protected function kirbyProps(): array
+    {
+        return [];
+    }
+
+    protected function initKirby(): void
+    {
+        $this->kirby = new Kirby($this->kirbyProps());
+
+        // Setup test email component
+        $this->kirby->extend([
+            'components' => [
+                'email' => function ($kirby, $props, $debug) {
+                    return new TestEmail($props);
+                },
+            ],
+        ]);
+
+        TestEmail::flushEmails();
+    }
+
+    protected function afterKirbyInit(): void
+    {
     }
 
     protected function normalizeHeaders(array $headers = []): array
