@@ -15,6 +15,7 @@ use PHPUnit\Framework\TestCase as BaseTestCase;
 class TestCase extends BaseTestCase
 {
     protected ?Kirby $kirby;
+    protected array $options = [];
     protected array $defaultQuery = [];
     protected array $defaultParams = [];
     protected array $defaultHeaders = [];
@@ -112,6 +113,13 @@ class TestCase extends BaseTestCase
         return $this;
     }
 
+    public function withOption(string $key, mixed $value): self
+    {
+        $this->options[$key] = $value;
+
+        return $this;
+    }
+
     public function kirby(): Kirby
     {
         if (null === $this->kirby) {
@@ -146,6 +154,11 @@ class TestCase extends BaseTestCase
         ]);
 
         TestEmail::flushEmails();
+
+        // Set options
+        $this->kirby->extend([
+            'options' => $this->options,
+        ]);
     }
 
     protected function afterKirbyInit(): void

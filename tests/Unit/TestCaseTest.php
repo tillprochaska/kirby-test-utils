@@ -145,3 +145,11 @@ it('flushes test emails before every test case', function () {
     $this->testCase->kirby()->email($props);
     expect(TestEmail::emails())->toHaveCount(1);
 });
+
+it('sets Kirby options', function () {
+    $value = $this->testCase
+        ->withOption('my-option', 'Hello World!')
+        ->kirby()->option('my-option');
+
+    expect($value)->toEqual('Hello World!');
+});
