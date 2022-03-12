@@ -142,23 +142,25 @@ class TestCase extends BaseTestCase
 
     protected function initKirby(): void
     {
-        $this->kirby = new Kirby($this->kirbyProps());
+        $this->kirby = new Kirby(array_merge(
+            $this->kirbyProps(),
 
-        // Setup test email component
-        $this->kirby->extend([
-            'components' => [
-                'email' => function ($kirby, $props, $debug) {
-                    return new TestEmail($props);
-                },
+            // Setup test email component
+            [
+                'components' => [
+                    'email' => function ($kirby, $props, $debug) {
+                        return new TestEmail($props);
+                    },
+                ],
             ],
-        ]);
+
+            // Set options
+            [
+                'options' => $this->options,
+            ]
+        ));
 
         TestEmail::flushEmails();
-
-        // Set options
-        $this->kirby->extend([
-            'options' => $this->options,
-        ]);
     }
 
     protected function afterKirbyInit(): void
