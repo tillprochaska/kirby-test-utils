@@ -149,7 +149,19 @@ it('flushes test emails before every test case', function () {
 it('sets Kirby options', function () {
     $value = $this->testCase
         ->withOption('my-option', 'Hello World!')
-        ->kirby()->option('my-option');
+        ->kirby()
+        ->option('my-option')
+    ;
 
     expect($value)->toEqual('Hello World!');
+});
+
+it('merges options recursively', function () {
+    $options = $this->testCase
+        ->withOption('defined-in-test-case', 'Hello World!')
+        ->kirby()
+        ->options()
+    ;
+
+    expect($options)->toHaveKeys(['defined-during-initialization', 'defined-in-test-case']);
 });

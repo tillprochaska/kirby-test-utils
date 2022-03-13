@@ -16,6 +16,9 @@ class TestTestCase extends BaseTestCase
             'roots' => [
                 'config' => __DIR__.'/support/kirby/config',
             ],
+            'options' => [
+                'defined-during-initialization' => 'Hello World!',
+            ],
         ];
     }
 }

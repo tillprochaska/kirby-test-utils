@@ -142,7 +142,7 @@ class TestCase extends BaseTestCase
 
     protected function initKirby(): void
     {
-        $this->kirby = new Kirby(array_merge(
+        $this->kirby = new Kirby(array_merge_recursive(
             $this->kirbyProps(),
 
             // Setup test email component
