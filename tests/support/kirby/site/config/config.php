@@ -51,5 +51,12 @@ return [
                 return 'Email sent!';
             },
         ],
+        [
+            'pattern' => '/user',
+            'method' => 'ALL',
+            'action' => function () {
+                return kirby()->user()?->email() ?? 'Not authenticated';
+            },
+        ],
     ],
 ];

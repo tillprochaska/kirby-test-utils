@@ -1,5 +1,6 @@
 <?php
 
+use Kirby\Cms\User;
 use Kirby\Http\Request;
 use TillProchaska\KirbyTestUtils\TestEmail;
 use TillProchaska\KirbyTestUtils\TestResponse;
@@ -17,6 +18,22 @@ it('makes HTTP requests', function () {
 
     $response = $this->testCase->request('POST', '/request-method');
     expect($response->body())->toEqual('POST');
+});
+
+it('makes HTTP requests using currently authenticated user', function () {
+    $this->testCase->kirby()->impersonate('kirby');
+
+    User::create([
+        'email' => 'admin@example.org',
+        'password' => 'test1234',
+        'role' => 'admin',
+    ]);
+
+    $this->testCase->kirby()->impersonate(null);
+    expect($this->testCase->get('/user'))->toSee('Not authenticated');
+
+    $this->testCase->kirby()->impersonate('admin@example.org');
+    expect($this->testCase->get('/user'))->toSee('admin@example.org');
 });
 
 it('returns a `TestResponse`', function () {

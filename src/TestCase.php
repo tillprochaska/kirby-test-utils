@@ -61,6 +61,10 @@ class TestCase extends BaseTestCase
             ],
         ]);
 
+        if ($user = $kirby->user()) {
+            $tempKirby->impersonate($user->id());
+        }
+
         // We then render the response for the test request using
         // the cloned Kirby instance.
         $response = $tempKirby->render();
