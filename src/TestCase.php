@@ -5,6 +5,7 @@ namespace TillProchaska\KirbyTestUtils;
 use Kirby\Cms\App as Kirby;
 use Kirby\Http\Request;
 use Kirby\Http\Response;
+use Kirby\Http\Uri;
 use Kirby\Http\Url;
 use PHPUnit\Framework\TestCase as BaseTestCase;
 
@@ -27,9 +28,10 @@ class TestCase extends BaseTestCase
 
     public function request(string $method, string $path, array $query = [], array $params = [], array $headers = []): Response
     {
-        $query = array_merge($this->defaultQuery, $query);
-        $params = array_merge($this->defaultParams, $params);
+        $query = array_merge($this->defaultQuery, (new Uri($path))->query()->toArray(), $query);
+        $params = array_merge($this->defaultParams, (new Uri($path))->params()->toArray(), $params);
         $headers = array_merge($this->defaultHeaders, $headers);
+        $path = (new Uri($path))->path()->toString();
 
         // Kirby doesn’t provide a clean way to set the headers
         // of a `Request` instance or to replace the `Request`
@@ -49,7 +51,10 @@ class TestCase extends BaseTestCase
 
         $requestProps = [
             'method' => $method,
-            'url' => Url::build(['path' => $path, 'params' => $params]),
+            'url' => Url::build([
+                'path' => $path,
+                'params' => $params,
+            ]),
             'query' => $query,
         ];
 

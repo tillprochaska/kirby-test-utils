@@ -61,6 +61,11 @@ it('accepts a query parameters array', function () {
     expect($body)->toEqual('{"foo":"bar"}');
 });
 
+it('accepts query parameters in URL', function () {
+    $body = $this->testCase->get('/query?foo=bar')->body();
+    expect($body)->toEqual('{"foo":"bar"}');
+});
+
 it('accepts a parameters array', function () {
     $response = $this->testCase->get('/params', params: ['foo' => 'bar']);
     expect($response->body())->toEqual('{"foo":"bar"}');
