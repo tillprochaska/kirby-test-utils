@@ -41,9 +41,10 @@ it('returns a `TestResponse`', function () {
 });
 
 it('exposes the original request on the response object', function () {
-    $request = $this->testCase->get('/hello-world')->request();
-    expect($request)->toBeInstanceOf(Request::class);
-    expect($request->url())->toEqual('/hello-world');
+    $request = $this->testCase->get('https://example.org/hello-world/foo:bar?foo=baz')->request();
+    expect($request)
+        ->toBeInstanceOf(Request::class)
+        ->url()->toEqual(new Kirby\Http\Uri('https://example.org/hello-world/foo:bar?foo=baz'));
 });
 
 it('has convenience method for GET requests', function () {

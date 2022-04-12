@@ -26,12 +26,16 @@ class TestCase extends BaseTestCase
         $this->kirby = null;
     }
 
-    public function request(string $method, string $path, array $query = [], array $params = [], array $headers = []): Response
+    public function request(string $method, string $url, array $query = [], array $params = [], array $headers = []): Response
     {
-        $query = array_merge($this->defaultQuery, (new Uri($path))->query()->toArray(), $query);
-        $params = array_merge($this->defaultParams, (new Uri($path))->params()->toArray(), $params);
+        $url = new Uri($url);
+        $query = array_merge($this->defaultQuery, $url->query()->toArray(), $query);
+        $params = array_merge($this->defaultParams, $url->params()->toArray(), $params);
+
+        $url->setQuery($query);
+        $url->setParams($params);
+
         $headers = array_merge($this->defaultHeaders, $headers);
-        $path = (new Uri($path))->path()->toString();
 
         // Kirby doesn’t provide a clean way to set the headers
         // of a `Request` instance or to replace the `Request`
@@ -51,15 +55,12 @@ class TestCase extends BaseTestCase
 
         $requestProps = [
             'method' => $method,
-            'url' => Url::build([
-                'path' => $path,
-                'params' => $params,
-            ]),
+            'url' => $url->toString(),
             'query' => $query,
         ];
 
         $tempKirby = kirby()->clone([
-            'path' => $path,
+            'path' => $url->path()->toString(),
             'request' => $requestProps,
             'components' => [
                 'email' => kirby()->extensions('components')['email'],
