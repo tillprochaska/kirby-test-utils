@@ -188,3 +188,23 @@ it('merges options recursively', function () {
 
     expect($options)->toHaveKeys(['defined-during-initialization', 'defined-in-test-case']);
 });
+
+it('sets the system and site URLs based on request', function () {
+    expect($this->testCase)
+        ->get('https://example.org/site-url')->body()->toEqual('https://example.org')
+        ->get('https://example.com/site-url')->body()->toEqual('https://example.com')
+        ->get('https://example.org/system-url')->body()->toEqual('https://example.org')
+        ->get('https://example.com/system-url')->body()->toEqual('https://example.com');
+});
+
+it('fakes $_SERVER variables', function () {
+    expect($this->testCase->get('https://example.org:1234/server?foo=bar'))->body()->json()->toEqual([
+        'HTTPS' => true,
+        'SERVER_NAME' => 'example.org',
+        'SERVER_PORT' => 1234,
+        'REQUEST_METHOD' => 'GET',
+        'REQUEST_URI' => '/server?foo=bar',
+        'PATH_INFO' => '/server',
+        'QUERY_STRING' => 'foo=bar',
+    ]);
+});

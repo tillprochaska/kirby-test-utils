@@ -58,5 +58,34 @@ return [
                 return kirby()->user()?->email() ?? 'Not authenticated';
             },
         ],
+        [
+            'pattern' => '/site-url',
+            'method' => 'ALL',
+            'action' => function () {
+                return kirby()->site()->url();
+            },
+        ],
+        [
+            'pattern' => '/system-url',
+            'method' => 'ALL',
+            'action' => function () {
+                return kirby()->url();
+            },
+        ],
+        [
+            'pattern' => '/server',
+            'method' => 'ALL',
+            'action' => function () {
+                return json_encode([
+                    'HTTPS' => $_SERVER['HTTPS'],
+                    'SERVER_NAME' => $_SERVER['SERVER_NAME'],
+                    'SERVER_PORT' => $_SERVER['SERVER_PORT'],
+                    'REQUEST_METHOD' => $_SERVER['REQUEST_METHOD'],
+                    'REQUEST_URI' => $_SERVER['REQUEST_URI'],
+                    'PATH_INFO' => $_SERVER['PATH_INFO'],
+                    'QUERY_STRING' => $_SERVER['QUERY_STRING'],
+                ]);
+            },
+        ],
     ],
 ];
