@@ -6,7 +6,6 @@ use Kirby\Cms\App as Kirby;
 use Kirby\Http\Request;
 use Kirby\Http\Response;
 use Kirby\Http\Uri;
-use Kirby\Http\Url;
 use PHPUnit\Framework\TestCase as BaseTestCase;
 
 /**
@@ -24,14 +23,37 @@ class TestCase extends BaseTestCase
     protected function setUp(): void
     {
         $this->kirby = null;
+        TestEmail::flushEmails();
     }
 
-    public function request(string $method, string $path, array $query = [], array $params = [], array $headers = []): Response
+    public function request(string $method, string $url, array $query = [], array $params = [], array $headers = []): Response
     {
-        $query = array_merge($this->defaultQuery, (new Uri($path))->query()->toArray(), $query);
-        $params = array_merge($this->defaultParams, (new Uri($path))->params()->toArray(), $params);
+        $url = new Uri($url);
+        $query = array_merge($this->defaultQuery, $url->query()->toArray(), $query);
+        $params = array_merge($this->defaultParams, $url->params()->toArray(), $params);
+
+        $url->setQuery($query);
+        $url->setParams($params);
+
         $headers = array_merge($this->defaultHeaders, $headers);
-        $path = (new Uri($path))->path()->toString();
+
+        // Fake $_SERVER variables
+        $server = [
+            'HTTPS' => 'https' === $url->scheme() ? true : false,
+            'SERVER_NAME' => $url->host(),
+            'SERVER_PORT' => $url->port(),
+            'REQUEST_METHOD' => strtoupper($method),
+            'REQUEST_URI' => (new Uri([
+                'path' => $url->path()->toString(),
+                'query' => $url->query(),
+            ]))->toString(),
+            'PATH_INFO' => '/'.$url->path()->toString(),
+            'QUERY_STRING' => $url->query()->toString(),
+        ];
+
+        foreach ($server as $key => $value) {
+            $_SERVER[$key] = $value;
+        }
 
         // Kirby doesn’t provide a clean way to set the headers
         // of a `Request` instance or to replace the `Request`
@@ -41,49 +63,49 @@ class TestCase extends BaseTestCase
             $_SERVER[$name] = $value;
         }
 
-        // We clone the Kirby instance and replace the current
-        // request object and path. This way, Kirby’s internal
-        // routing as well as any site-specific logic always
-        // use the test request. The cloned Kirby instance will
-        // also be returned whenever the Kirby singleton is
-        // accessed (e.g. in the `kirby()` helper).
-        $kirby = $this->kirby();
+        // We create a new temporary Kirby instance and explicitly pass
+        // the request properties. This way, Kirby’s internal routing as
+        // well as any site-specific logic always use the test request.
+        // The temporary Kirby instance will also be returned whenever the
+        // Kirby singleton is accessed (e.g. in the `kirby()` helper).
+
+        // Keep a reference to the original Kirby instance, so we can reset
+        // it after we’ve made the request.
+        $originalKirby = $this->kirby();
 
         $requestProps = [
             'method' => $method,
-            'url' => Url::build([
-                'path' => $path,
-                'params' => $params,
-            ]),
+            'url' => $url->toString(),
             'query' => $query,
         ];
 
-        $tempKirby = kirby()->clone([
-            'path' => $path,
+        // There’s no public API to set the singleton, so the easiest
+        // workaround is to clone it.
+        $tempKirby = $this->initKirby([
+            'path' => $url->path()->toString(),
             'request' => $requestProps,
-            'components' => [
-                'email' => kirby()->extensions('components')['email'],
-            ],
-        ]);
+        ])->clone(setInstance: true);
 
-        if ($user = $kirby->user()) {
+        // Handle authenticated users
+        if ($user = $originalKirby->user()) {
             $tempKirby->impersonate($user->id());
         }
 
-        // We then render the response for the test request using
-        // the cloned Kirby instance.
+        // Render the response for the test request using the temporary Kirby instance
         $response = $tempKirby->render();
 
-        // ... and we also reset the delete the headers from `$_SERVER`
+        // Reset HTTP headers
         foreach ($this->normalizeHeaders($headers) as $name => $value) {
             unset($_SERVER[$name]);
         }
 
+        // Reset default $_SERVER variables
+        foreach ($server as $key => $value) {
+            unset($_SERVER[$key]);
+        }
+
         // Finally, we reset the singleton to the original instance.
-        // There’s no public API to set the singleton. We clone the
-        // original instance (without overwriting any props) as a
-        // workaround.
-        $kirby->clone();
+        $originalKirby->clone(setInstance: true);
 
         return new TestResponse(
             response: $response,
@@ -133,7 +155,11 @@ class TestCase extends BaseTestCase
     {
         if (null === $this->kirby) {
             $this->beforeKirbyInit();
-            $this->initKirby();
+
+            // There is no public API to set the instance singleton, so
+            // the easiest workaround is to clone it
+            $this->kirby = $this->initKirby()->clone(setInstance: true);
+
             $this->afterKirbyInit();
         }
 
@@ -149,10 +175,11 @@ class TestCase extends BaseTestCase
         return [];
     }
 
-    protected function initKirby(): void
+    protected function initKirby(array $props = []): Kirby
     {
-        $this->kirby = new Kirby(array_merge_recursive(
+        return new Kirby(array_merge_recursive(
             $this->kirbyProps(),
+            $props,
 
             // Setup test email component
             [
@@ -167,9 +194,7 @@ class TestCase extends BaseTestCase
             [
                 'options' => $this->options,
             ]
-        ));
-
-        TestEmail::flushEmails();
+        ), setInstance: false);
     }
 
     protected function afterKirbyInit(): void

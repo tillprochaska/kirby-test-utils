@@ -41,9 +41,10 @@ it('returns a `TestResponse`', function () {
 });
 
 it('exposes the original request on the response object', function () {
-    $request = $this->testCase->get('/hello-world')->request();
-    expect($request)->toBeInstanceOf(Request::class);
-    expect($request->url())->toEqual('/hello-world');
+    $request = $this->testCase->get('https://example.org/hello-world/foo:bar?foo=baz')->request();
+    expect($request)
+        ->toBeInstanceOf(Request::class)
+        ->url()->toEqual(new Kirby\Http\Uri('https://example.org/hello-world/foo:bar?foo=baz'));
 });
 
 it('has convenience method for GET requests', function () {
@@ -186,4 +187,24 @@ it('merges options recursively', function () {
     ;
 
     expect($options)->toHaveKeys(['defined-during-initialization', 'defined-in-test-case']);
+});
+
+it('sets the system and site URLs based on request', function () {
+    expect($this->testCase)
+        ->get('https://example.org/site-url')->body()->toEqual('https://example.org')
+        ->get('https://example.com/site-url')->body()->toEqual('https://example.com')
+        ->get('https://example.org/system-url')->body()->toEqual('https://example.org')
+        ->get('https://example.com/system-url')->body()->toEqual('https://example.com');
+});
+
+it('fakes $_SERVER variables', function () {
+    expect($this->testCase->get('https://example.org:1234/server?foo=bar'))->body()->json()->toEqual([
+        'HTTPS' => true,
+        'SERVER_NAME' => 'example.org',
+        'SERVER_PORT' => 1234,
+        'REQUEST_METHOD' => 'GET',
+        'REQUEST_URI' => '/server?foo=bar',
+        'PATH_INFO' => '/server',
+        'QUERY_STRING' => 'foo=bar',
+    ]);
 });
